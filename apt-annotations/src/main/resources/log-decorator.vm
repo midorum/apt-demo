@@ -1,0 +1,23 @@
+package ${packageName};
+
+public class ${className}Logged {
+
+    private final ${fqClassName} target;
+    private final java.util.logging.Logger logger;
+
+    public ${className}Logged(final ${fqClassName} target) {
+        this.target = target;
+        this.logger = java.util.logging.Logger.getLogger(${fqClassName}.class.getName());
+    }
+
+#foreach($method in $methods)
+
+    #foreach($modifier in $method.modifiers()) $modifier #end ${method.fqReturnType()} ${method.name()}(#foreach($parameter in $method.parameters()) final ${parameter.fqTypeName()} ${parameter.name()} #if( $foreach.hasNext ),#end #end) #if( !$method.thrownTypes().isEmpty() ) throws #end #foreach($thrownType in $method.thrownTypes()) ${thrownType.fqTypeName()} #if( $foreach.hasNext ),#end #end {
+        this.logger.log(java.util.logging.Level.INFO, "${fqClassName}#${method.name()} has been invoked with parameters: [" + #foreach($parameter in $method.parameters())"${parameter.name()}:${parameter.fqTypeName()}=" + ${parameter.name()}#if( $foreach.hasNext ) + ", "#end + #end"]");
+        #if( !$method.fqReturnType().equals("void") )final ${method.fqReturnType()} result =#end this.target.${method.name()}(#foreach($parameter in $method.parameters()) ${parameter.name()} #if( $foreach.hasNext ),#end #end);
+        this.logger.log(java.util.logging.Level.INFO, "${fqClassName}#${method.name()} has returned with result: $method.fqReturnType()#if( !$method.fqReturnType().equals("void") )=" + result #else"#end);
+        return#if( !$method.fqReturnType().equals("void") ) result#end;
+    }
+
+#end
+}
